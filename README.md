@@ -21,7 +21,8 @@ data from each quarterly Care Compare report since January 2018.
 
 ## Installation
 
-This has only been tested on Windows, and the steps to install there are
+This has only been tested on Windows. The steps to install on Windows
+are
 
 1.  Download and install
     [RTools](https://cran.r-project.org/bin/windows/Rtools/) for your
@@ -135,10 +136,14 @@ mortality_history_df %>%
 
 ## Star Rating Algorithm
 
-The `star_rating_input()` function takes a `report_date` argument and
-returns a table with data from the Care Compare report released that
-month, which can be used as input for the star rating algorithm,
-`compute_star_scores()`.
+In order to calculate star ratings, you need an input table with all
+hospitals’ data. The `star_rating_input()` function returns a data.frame
+made of Care Compare data from the `report_date`, the first day of the
+month the Care Compare report was released.
+
+Then `compute_star_scores()` will calculate the star ratings (using the
+July 2022 version by default). The results are returned in a copy of the
+input table with extra columns added.
 
 ``` r
 input_df <- star_rating_input(report_date = "2021-07-01")
@@ -153,8 +158,8 @@ output_df %>%
 #> 3      390270          5     0.4064116     5
 ```
 
-`hospitalstars` also includes the SAS Package’s output, which was
-computed in SAS.
+`hospitalstars` also includes a copy of the SAS Package’s output, which
+was computed in SAS.
 
 ``` r
 sas_package$v202207$output_df %>%
@@ -169,15 +174,14 @@ sas_package$v202207$output_df %>%
 #> 3      390270          5     0.4062735     5
 ```
 
-The last two tables of results are not the same because the SAS
-Package’s input file has some differences with the Care Compare report
-from July 2021 (the data used for the 2022 Star Ratings). If you use the
-SAS Package’s input file in R here, you should get the same output as
-you would in SAS.
+The results in the last two code chunks above are not the same because
+the SAS Package’s input file has some differences with the Care Compare
+report from July 2021 (the data used for the 2022 Star Ratings). If you
+use the SAS Package’s input file in R here, you should get the same
+output as you would in SAS.
 
 ``` r
-sas_package$v202207$input_df %>%
-  compute_star_scores() %>%
+compute_star_scores(sas_package$v202207$input_df) %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
   select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
 #>   PROVIDER_ID peer_group summary_score stars

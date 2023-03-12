@@ -1,11 +1,12 @@
 Package: hospitalstars
 Type: Package
-Title: What the Package Does (Title Case)
+Title: CMS hospital star rating data and algorithm
 Version: 0.1.0
 Author: Jim Urick
 Maintainer: Jim Urick <jimurick@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The `hospitalstars` package has data used in the Centers for
+    Medicare and Medicaid Services (CMS) hospital star ratings, and an R
+    implementation of the SAS code that computes the ratings.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
