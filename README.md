@@ -127,7 +127,7 @@ mortality_history_df %>%
              group = hospital_name, color = hospital_name)) +
   geom_line() +
   facet_wrap(~measure_id, scales = "free_y") +
-  theme(legend.position = c(0.77, 0.15)) +
+  theme(legend.position = c(0.75, 0.15)) +
   ggtitle("Geisinger Scores for Mortality Measures")
 ```
 
