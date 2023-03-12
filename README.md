@@ -138,8 +138,8 @@ mortality_history_df %>%
 
 In order to calculate star ratings, you need an input table with all
 hospitals’ data. The `star_rating_input()` function returns a data.frame
-made of Care Compare data from the `report_date`, the first day of the
-month the Care Compare report was released.
+made of Care Compare data. Its argument `report_date` specifies the
+first day of the month the Care Compare report was released.
 
 Then `compute_star_scores()` will calculate the star ratings (using the
 July 2022 version by default). The results are returned in a copy of the
@@ -174,11 +174,11 @@ sas_package$v202207$output_df %>%
 #> 3      390270          5     0.4062735     5
 ```
 
-The results in the last two code chunks above are not the same because
-the SAS Package’s input file has some differences with the Care Compare
-report from July 2021 (the data used for the 2022 Star Ratings). If you
-use the SAS Package’s input file in R here, you should get the same
-output as you would in SAS.
+It may be interesting to note that the results in the last two code
+chunks above are not the same, because the SAS Package’s input file has
+some differences with the Care Compare report from July 2021 (the data
+used for the 2022 Star Ratings). If you use the SAS Package’s input file
+in R here, you should get the same output as you would in SAS.
 
 ``` r
 compute_star_scores(sas_package$v202207$input_df) %>%
