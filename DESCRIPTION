@@ -20,3 +20,5 @@ Imports:
     Rcpp
 Depends: 
     R (>= 2.10)
+URL: https://github.com/jimurick/hospitalstars
+BugReports: https://github.com/jimurick/hospitalstars/issues
