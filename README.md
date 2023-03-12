@@ -121,7 +121,8 @@ geis_names_df <-
   geisinger_df %>%
   select(PROVIDER_ID, hospital_name)
 
-mortality_history_df %>%
+p <-
+  mortality_history_df %>%
   inner_join(geis_names_df, by = "PROVIDER_ID") %>%
   ggplot(aes(report_date, score,
              group = hospital_name, color = hospital_name)) +
@@ -130,8 +131,6 @@ mortality_history_df %>%
   theme(legend.position = c(0.75, 0.15)) +
   ggtitle("Geisinger Scores for Mortality Measures")
 ```
-
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ## Star Rating Algorithm
 
