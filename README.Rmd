@@ -1,0 +1,203 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+options(tidyverse.quiet = TRUE)
+```
+
+# hospitalstars
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+CMS issues star ratings annually for hospitals, and they make the *data* ([Care Compare reports](https://data.cms.gov/provider-data/archived-data/hospitals)) and the *algorithm* ([SAS package](https://qualitynet.cms.gov/inpatient/public-reporting/overall-ratings/sas)) publicly available. However, that can be difficult to work with because the data is spread out over dozens of archives of CSV files, and the algorithm is implemented with SAS.
+
+The hospitalstars package has an R implementation of the most recent (April 2021 & July 2022) versions of the SAS package, and prepared input data from each quarterly Care Compare report since January 2018.
+
+## Installation
+
+This has only been tested on Windows, and the steps to install there are
+
+1. Download and install [RTools](https://cran.r-project.org/bin/windows/Rtools/) for your version of R.
+2. Install the devtools package.
+3. Install the development version of hospitalstars with the command below. You may need to restart RStudio first.
+
+``` r
+devtools::install_github("jimurick/hospitalstars")
+```
+
+## Hospital and Measure Info
+
+The table `hospitalstars::hospital_info_df` has basic information for each hospital.
+
+```{r example1}
+library(hospitalstars)
+
+hospital_info_df[1:5, c("PROVIDER_ID", "hospital_name")]
+```
+
+The next chunk pulls 3 of Geisinger's bigger hospitals.
+
+```{r}
+suppressWarnings(library(tidyverse))
+
+geisinger_df <-
+  hospital_info_df %>%
+  filter(grepl("GEISINGER.*CENTER$", hospital_info_df$hospital_name))
+  
+geisinger_df %>%
+  select(PROVIDER_ID, hospital_name)
+```
+
+There's also a table `measure_info_df` with one row for each combination of a measure appearing in a Care Compare report. The column `report_date` gives the first day of the month that the Care Compare report was released.
+
+This chunk shows the 7 mortality measures and their IDs.
+
+```{r}
+mortality_df <-
+  measure_info_df %>%
+  filter(report_date == "2023-01-01", measure_group == "Mortality")
+
+mortality_df %>%
+  transmute(measure_id, measure_name = str_sub(measure_name, end = 60))
+```
+
+
+
+## Historical Measure Data
+
+The function `historical_measure_data()` pulls historical scores for each quarter since January 2018 for the given hospitals and measures.
+
+```{r}
+mortality_history_df <-
+  historical_measure_data(
+    measure_ids = mortality_df$measure_id,
+    provider_ids = geisinger_df$PROVIDER_ID
+  )
+
+mortality_history_df %>% head()
+```
+
+The format of this data is easy to use with ggplot.
+
+```{r}
+geis_names_df <-
+  geisinger_df %>%
+  select(PROVIDER_ID, hospital_name)
+
+mortality_history_df %>%
+  inner_join(geis_names_df, by = "PROVIDER_ID") %>%
+  ggplot(aes(report_date, score,
+             group = hospital_name, color = hospital_name)) +
+  geom_line() +
+  facet_wrap(~measure_id, scales = "free_y") +
+  theme(legend.position = c(0.77, 0.15)) +
+  ggtitle("Geisinger Scores for Mortality Measures")
+```
+
+
+## Star Rating Algorithm
+
+The `star_rating_input()` function takes a `report_date` argument and returns a table with data from the Care Compare report released that month, which can be used as input for the star rating algorithm, `compute_star_scores()`.
+
+```{r}
+input_df <- star_rating_input(report_date = "2021-07-01")
+output_df <- compute_star_scores(input_df)
+
+output_df %>%
+  filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
+  select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
+```
+
+`hospitalstars` also includes the SAS Package's output, which was computed in SAS.
+
+```{r}
+sas_package$v202207$output_df %>%
+  select(
+    PROVIDER_ID, peer_group = Total_measure_group_cnt,
+    summary_score, stars = star
+  ) %>%
+  filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID)
+```
+
+The last two tables of results are not the same because the SAS Package's input file has some differences with the Care Compare report from July 2021 (the data used for the 2022 Star Ratings). If you use the SAS Package's input file in R here, you should get the same output as you would in SAS.
+
+```{r}
+sas_package$v202207$input_df %>%
+  compute_star_scores() %>%
+  filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
+  select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
+```
+
+To see the specific measure values where the two disagree, you could use a query like this, which counts how many disagreements there are by measure.
+
+```{r}
+r_unpivoted_df <- input_df %>%
+  pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_r")
+sas_unpivoted_df <- sas_package$v202207$input_df %>%
+  pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_sas")
+
+r_unpivoted_df %>%
+  full_join(sas_unpivoted_df, by = c("PROVIDER_ID", "measure_id")) %>%
+  mutate(
+    score_r = replace_na(score_r, -1000),
+    score_sas = replace_na(score_sas, -1000)
+  ) %>%
+  filter(score_r != score_sas) %>%
+  filter(!grepl("(NUMB_COMP|RATE_P|_DEN|_DEN_PRED)$", measure_id)) %>%
+  count(measure_id) %>%
+  arrange(desc(n)) %>%
+  head()
+```
+
+
+
+## What-if Analysis
+
+Suppose we wanted to see how improving mortality scores would change the final star ratings.
+
+We'll reuse the `input_df` dataframe created in [Star Rating Algorithm](#star-rating-algorithm) above. The current mortality scores are
+
+```{r}
+input_df %>%
+  inner_join(geis_names_df, by = "PROVIDER_ID") %>%
+  select_at(c("hospital_name", mortality_df$measure_id))
+```
+
+Create a new input table where those scores are improved by 5%.
+
+```{r}
+improvement <-
+  ifelse(input_df$PROVIDER_ID %in% geisinger_df$PROVIDER_ID, 0.95, 1)
+
+new_input_df <- input_df
+for (m_id in mortality_df$measure_id)
+  new_input_df[[m_id]] <- new_input_df[[m_id]] * improvement
+
+new_input_df %>%
+  inner_join(geis_names_df, by = "PROVIDER_ID") %>%
+  select_at(c("hospital_name", mortality_df$measure_id))
+```
+
+Then recompute the star scores.
+
+```{r}
+new_output_df <- compute_star_scores(new_input_df)
+
+new_output_df %>%
+  inner_join(geis_names_df, by = "PROVIDER_ID") %>%
+  select(hospital_name, peer_group = n_groups, summary_score, stars)
+```
+
+So improving all 7 Mortality scores by 5% changed the overall star ratings from 3, 4 and 5 to 4, 5 and 5.
+
+
