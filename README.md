@@ -21,15 +21,16 @@ data from each quarterly Care Compare report since January 2018.
 
 ## Installation
 
-This has only been tested on Windows. The steps to install on Windows
-are
+Before installing this package on Windows, you need to download and
+install [RTools](https://cran.r-project.org/bin/windows/Rtools/) for
+your version of R. If RStudio is open, you may need to restart it.
 
-1.  Download and install
-    [RTools](https://cran.r-project.org/bin/windows/Rtools/) for your
-    version of R.
-2.  Install the devtools package.
-3.  Install the development version of hospitalstars with the command
-    below. You may need to restart RStudio first.
+This has only been tested on Windows and Ubuntu. The two steps to
+install there are:
+
+1.  Install the devtools package.
+2.  Install the development version of hospitalstars with the command
+    below.
 
 ``` r
 devtools::install_github("jimurick/hospitalstars")
