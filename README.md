@@ -17,7 +17,8 @@ algorithm is implemented with SAS.
 
 The hospitalstars package has an R implementation of the most recent
 (April 2021 & July 2022) versions of the SAS package, and prepared input
-data from each quarterly Care Compare report since January 2018.
+data from each quarterly Care Compare report from January 2018 through
+April 2023.
 
 ## Installation
 
@@ -75,12 +76,13 @@ of a measure appearing in a Care Compare report. The column
 `report_date` gives the first day of the month that the Care Compare
 report was released.
 
-This chunk shows the 7 mortality measures and their IDs.
+This chunk shows the 7 mortality measures and their IDs. Some measure
+names are a little long, so they’re limited to 60 characters here.
 
 ``` r
 mortality_df <-
   measure_info_df %>%
-  filter(report_date == "2023-01-01", measure_group == "Mortality")
+  filter(report_date == "2023-04-01", measure_group == "Mortality")
 
 mortality_df %>%
   transmute(measure_id, measure_name = str_sub(measure_name, end = 60))
@@ -154,9 +156,9 @@ output_df %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
   select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
 #>   PROVIDER_ID peer_group summary_score stars
-#> 1      390001          5    -0.1152103     3
-#> 2      390006          5     0.2575356     4
-#> 3      390270          5     0.4064116     5
+#> 1      390001          5    -0.1094848     3
+#> 2      390006          5     0.2596142     4
+#> 3      390270          5     0.4065224     5
 ```
 
 `hospitalstars` also includes a copy of the SAS Package’s output, which
@@ -215,8 +217,8 @@ r_unpivoted_df %>%
 #> # A tibble: 6 × 2
 #>   measure_id             n
 #>   <chr>              <int>
-#> 1 READM_30_HIP_KNEE    222
-#> 2 OP_10                 90
+#> 1 OP_10               3823
+#> 2 READM_30_HIP_KNEE    222
 #> 3 COMP_HIP_KNEE         23
 #> 4 MORT_30_PN            15
 #> 5 EDAC_30_PN            14
@@ -278,9 +280,9 @@ new_output_df %>%
   inner_join(geis_names_df, by = "PROVIDER_ID") %>%
   select(hospital_name, peer_group = n_groups, summary_score, stars)
 #>                             hospital_name peer_group summary_score stars
-#> 1      GEISINGER-COMMUNITY MEDICAL CENTER          5    0.02429205     4
-#> 2                GEISINGER MEDICAL CENTER          5    0.39149109     5
-#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER          5    0.52583201     5
+#> 1      GEISINGER-COMMUNITY MEDICAL CENTER          5    0.03001759     4
+#> 2                GEISINGER MEDICAL CENTER          5    0.39356969     5
+#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER          5    0.52594285     5
 ```
 
 So improving all 7 Mortality scores by 5% changed the overall star

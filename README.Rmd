@@ -21,7 +21,7 @@ options(tidyverse.quiet = TRUE)
 
 CMS issues star ratings annually for hospitals, and they make the *data* ([Care Compare reports](https://data.cms.gov/provider-data/archived-data/hospitals)) and the *algorithm* ([SAS package](https://qualitynet.cms.gov/inpatient/public-reporting/overall-ratings/sas)) publicly available. However, that can be difficult to work with because the data is spread out over dozens of archives of CSV files, and the algorithm is implemented with SAS.
 
-The hospitalstars package has an R implementation of the most recent (April 2021 & July 2022) versions of the SAS package, and prepared input data from each quarterly Care Compare report since January 2018.
+The hospitalstars package has an R implementation of the most recent (April 2021 & July 2022) versions of the SAS package, and prepared input data from each quarterly Care Compare report from January 2018 through April 2023.
 
 ## Installation
 
@@ -63,12 +63,12 @@ geisinger_df %>%
 
 There's also a table `measure_info_df` with one row for each combination of a measure appearing in a Care Compare report. The column `report_date` gives the first day of the month that the Care Compare report was released.
 
-This chunk shows the 7 mortality measures and their IDs.
+This chunk shows the 7 mortality measures and their IDs. Some measure names are a little long, so they're limited to 60 characters here.
 
 ```{r}
 mortality_df <-
   measure_info_df %>%
-  filter(report_date == "2023-01-01", measure_group == "Mortality")
+  filter(report_date == "2023-04-01", measure_group == "Mortality")
 
 mortality_df %>%
   transmute(measure_id, measure_name = str_sub(measure_name, end = 60))
