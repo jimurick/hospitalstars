@@ -1,6 +1,16 @@
 
 
 
+clean_dataframe <- function(df) {
+  for (var in colnames(df)) {
+    for (l in names(attributes(df[[var]]))) {
+      attr(df[[var]], l) <- NULL
+    }
+  }
+  df
+}
+
+
 get_measure_ref_dt <- function(star_version) {
   m_dt <- measure_ref$measure_dt
   if (star_version == "202104") {
@@ -198,7 +208,8 @@ compute_star_scores <- function(sas_input_df, star_version = "202207") {
   final_dt <- sas_step3_stars(group_scores_dt)
   data.table::merge.data.table(sas_input_dt, final_dt, by = "PROVIDER_ID",
                                all.x = TRUE) %>%
-    as.data.frame()
+    as.data.frame() %>%
+    clean_dataframe()
 }
 
 
