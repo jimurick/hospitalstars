@@ -4,12 +4,13 @@
 \alias{sas_step1_standardize}
 \title{Step 1 of the star rating algorithm - standardize measure scores}
 \usage{
-sas_step1_standardize(sas_input_dt, star_version = "202207")
+sas_step1_standardize(sas_input_dt, star_version = "v202307")
 }
 \arguments{
-\item{sas_input_dt}{Input data, same format as the 2021-04 SAS example input}
+\item{sas_input_dt}{Input data, same format as the SAS example input from
+2021-04, 2022-07 or 2023-07}
 
-\item{star_version}{Either "202207" (the default) or "202104"}
+\item{star_version}{One of "v202307" (the default), "v202207" or "v202104"}
 }
 \value{
 a data.table

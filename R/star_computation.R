@@ -11,30 +11,24 @@ clean_dataframe <- function(df) {
 }
 
 
-get_measure_ref_dt <- function(star_version) {
-  m_dt <- measure_ref$measure_dt
-  if (star_version == "202104") {
-    m_dt
-  } else if (star_version == "202207") {
-    m_dt[!m_dt$retired_2021]
-  }
-}
 
 
 #' Step 1 of the star rating algorithm - standardize measure scores
 #'
-#' @param sas_input_dt Input data, same format as the 2021-04 SAS example input
-#' @param star_version Either "202207" (the default) or "202104"
+#' @param sas_input_dt Input data, same format as the SAS example input from
+#'     2021-04, 2022-07 or 2023-07
+#' @param star_version One of "v202307" (the default), "v202207" or "v202104"
 #'
 #' @return a data.table
 #' @export
-sas_step1_standardize <- function(sas_input_dt, star_version = "202207") {
+sas_step1_standardize <- function(sas_input_dt, star_version = "v202307") {
 
   if (!data.table::is.data.table(sas_input_dt)) {
     sas_input_dt <- data.table::data.table(sas_input_dt)
   }
 
-  measure_ref_dt <- get_measure_ref_dt(star_version)
+  #measure_ref_dt <- get_measure_ref_dt(star_version)
+  measure_ref_dt <- measure_ref$measure_dt[[star_version]]
   measures_all <- measure_ref_dt$measure_id
   measures_all <- measures_all[measures_all %in% colnames(sas_input_dt)]
 
@@ -78,14 +72,16 @@ sas_step1_standardize <- function(sas_input_dt, star_version = "202207") {
 #'
 #' @param std_data_dt cleaned & standardized data.table from step 1
 #' @param measure_ids the measure_ids with enough observed values to be included
+#' @param star_version One of "v202307" (the default), "v202207" or "v202104"
 #'
 #' @return a data.table
 #' @export
-sas_step2_groups <- function(std_data_dt, measure_ids) {
+sas_step2_groups <- function(std_data_dt, measure_ids, star_version = "v202307") {
 
+  measure_ref_dt <- measure_ref$measure_dt[[star_version]]
   temp_measures_dt <-
     data.table::merge.data.table(
-      measure_ref$measure_dt[, c("measure_id", "group_name")],
+      measure_ref_dt[, c("measure_id", "group_name")],
       measure_ref$group_dt, by = "group_name"
     )
 
@@ -192,19 +188,20 @@ sas_step3_stars <- function(group_scores_dt) {
 
 #' Compute star scores
 #'
-#' @param sas_input_df Input data, with approximate the same format as in the
-#'     example files for the 2021-04 or 2022-07 versions of the SAS package
-#' @param star_version Either "202207" (the default) or "202104"
+#' @param sas_input_df Input data, with approximately the same format as in the
+#'     example files for the 2021-04, 2022-07 or 2023-07 versions of the SAS
+#'     package
+#' @param star_version One of "v202307" (the default), "v202207" or "v202104"
 #'
 #' @return The input table with star computation results added in the far right
 #'     columns
 #' @export
-compute_star_scores <- function(sas_input_df, star_version = "202207") {
+compute_star_scores <- function(sas_input_df, star_version = "v202307") {
 
   sas_input_dt <- data.table::as.data.table(sas_input_df)
   init_list <- sas_step1_standardize(sas_input_dt, star_version)
-  group_scores_dt <- sas_step2_groups(init_list$dt,
-                                             init_list$measure_ids)
+  group_scores_dt <- sas_step2_groups(init_list$dt, init_list$measure_ids,
+                                      star_version)
   final_dt <- sas_step3_stars(group_scores_dt)
   data.table::merge.data.table(sas_input_dt, final_dt, by = "PROVIDER_ID",
                                all.x = TRUE) %>%

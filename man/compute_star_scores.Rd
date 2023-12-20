@@ -4,13 +4,14 @@
 \alias{compute_star_scores}
 \title{Compute star scores}
 \usage{
-compute_star_scores(sas_input_df, star_version = "202207")
+compute_star_scores(sas_input_df, star_version = "v202307")
 }
 \arguments{
-\item{sas_input_df}{Input data, with approximate the same format as in the
-example files for the 2021-04 or 2022-07 versions of the SAS package}
+\item{sas_input_df}{Input data, with approximately the same format as in the
+example files for the 2021-04, 2022-07 or 2023-07 versions of the SAS
+package}
 
-\item{star_version}{Either "202207" (the default) or "202104"}
+\item{star_version}{One of "v202307" (the default), "v202207" or "v202104"}
 }
 \value{
 The input table with star computation results added in the far right
