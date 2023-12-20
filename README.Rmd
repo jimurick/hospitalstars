@@ -68,7 +68,7 @@ This chunk shows the 7 mortality measures and their IDs. Some measure names are 
 ```{r}
 mortality_df <-
   measure_info_df %>%
-  filter(report_date == "2023-04-01", measure_group == "Mortality")
+  filter(report_date == "2023-10-01", measure_group == "Mortality")
 
 mortality_df %>%
   transmute(measure_id, measure_name = str_sub(measure_name, end = 60))
@@ -112,10 +112,10 @@ mortality_history_df %>%
 
 In order to calculate star ratings, you need an input table with all hospitals' data. The `star_rating_input()` function returns a data.frame made of Care Compare data. Its argument `report_date` specifies the first day of the month the Care Compare report was released.
 
-Then `compute_star_scores()` will calculate the star ratings (using the July 2022 version by default). The results are returned in a copy of the input table with extra columns added.
+Then `compute_star_scores()` will calculate the star ratings (using the July 2023 version by default). The results are returned in a copy of the input table with extra columns added.
 
 ```{r}
-input_df <- star_rating_input(report_date = "2021-07-01")
+input_df <- star_rating_input(report_date = "2023-01-01")
 output_df <- compute_star_scores(input_df)
 
 output_df %>%
@@ -126,7 +126,7 @@ output_df %>%
 `hospitalstars` also includes a copy of the SAS Package's output, which was computed in SAS.
 
 ```{r}
-sas_package$v202207$output_df %>%
+sas_package$v202307$output_df %>%
   select(
     PROVIDER_ID, peer_group = Total_measure_group_cnt,
     summary_score, stars = star
@@ -137,7 +137,7 @@ sas_package$v202207$output_df %>%
 It may be interesting to note that the results in the last two code chunks above are not the same, because the SAS Package's input file has some differences with the Care Compare report from July 2021 (the data used for the 2022 Star Ratings). If you use the SAS Package's input file in R here, you should get the same output as you would in SAS.
 
 ```{r}
-compute_star_scores(sas_package$v202207$input_df) %>%
+compute_star_scores(sas_package$v202307$input_df) %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
   select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
 ```
@@ -147,7 +147,7 @@ To see the specific measure values where the two disagree, you could use a query
 ```{r}
 r_unpivoted_df <- input_df %>%
   pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_r")
-sas_unpivoted_df <- sas_package$v202207$input_df %>%
+sas_unpivoted_df <- sas_package$v202307$input_df %>%
   pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_sas")
 
 r_unpivoted_df %>%
@@ -202,6 +202,6 @@ new_output_df %>%
   select(hospital_name, peer_group = n_groups, summary_score, stars)
 ```
 
-So improving all 7 Mortality scores by 5% changed the overall star ratings from 3, 4 and 5 to 4, 5 and 5.
+So improving all 7 Mortality scores by 5% changed the overall star ratings from 4, 4 and 4 to 4, 5 and 5.
 
 

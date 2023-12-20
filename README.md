@@ -82,7 +82,7 @@ names are a little long, so they’re limited to 60 characters here.
 ``` r
 mortality_df <-
   measure_info_df %>%
-  filter(report_date == "2023-04-01", measure_group == "Mortality")
+  filter(report_date == "2023-10-01", measure_group == "Mortality")
 
 mortality_df %>%
   transmute(measure_id, measure_name = str_sub(measure_name, end = 60))
@@ -145,36 +145,36 @@ made of Care Compare data. Its argument `report_date` specifies the
 first day of the month the Care Compare report was released.
 
 Then `compute_star_scores()` will calculate the star ratings (using the
-July 2022 version by default). The results are returned in a copy of the
+July 2023 version by default). The results are returned in a copy of the
 input table with extra columns added.
 
 ``` r
-input_df <- star_rating_input(report_date = "2021-07-01")
+input_df <- star_rating_input(report_date = "2023-01-01")
 output_df <- compute_star_scores(input_df)
 
 output_df %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
   select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
 #>   PROVIDER_ID peer_group summary_score stars
-#> 1      390001          5    -0.1094848     3
-#> 2      390006          5     0.2596142     4
-#> 3      390270          5     0.4065224     5
+#> 1      390001          5    0.09732463     4
+#> 2      390006          5    0.30614614     4
+#> 3      390270          5    0.35972998     4
 ```
 
 `hospitalstars` also includes a copy of the SAS Package’s output, which
 was computed in SAS.
 
 ``` r
-sas_package$v202207$output_df %>%
+sas_package$v202307$output_df %>%
   select(
     PROVIDER_ID, peer_group = Total_measure_group_cnt,
     summary_score, stars = star
   ) %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID)
 #>   PROVIDER_ID peer_group summary_score stars
-#> 1      390001          5    -0.1145421     3
-#> 2      390006          5     0.2577293     4
-#> 3      390270          5     0.4062735     5
+#> 1      390001          5    0.09956553     4
+#> 2      390006          5    0.30740967     4
+#> 3      390270          5    0.36152747     4
 ```
 
 It may be interesting to note that the results in the last two code
@@ -184,13 +184,13 @@ used for the 2022 Star Ratings). If you use the SAS Package’s input file
 in R here, you should get the same output as you would in SAS.
 
 ``` r
-compute_star_scores(sas_package$v202207$input_df) %>%
+compute_star_scores(sas_package$v202307$input_df) %>%
   filter(PROVIDER_ID %in% geisinger_df$PROVIDER_ID) %>%
   select(PROVIDER_ID, peer_group = n_groups, summary_score, stars)
 #>   PROVIDER_ID peer_group summary_score stars
-#> 1      390001          5    -0.1145421     3
-#> 2      390006          5     0.2577293     4
-#> 3      390270          5     0.4062735     5
+#> 1      390001          5    0.09956553     4
+#> 2      390006          5    0.30740967     4
+#> 3      390270          5    0.36152747     4
 ```
 
 To see the specific measure values where the two disagree, you could use
@@ -200,7 +200,7 @@ measure.
 ``` r
 r_unpivoted_df <- input_df %>%
   pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_r")
-sas_unpivoted_df <- sas_package$v202207$input_df %>%
+sas_unpivoted_df <- sas_package$v202307$input_df %>%
   pivot_longer(-PROVIDER_ID, names_to = "measure_id", values_to = "score_sas")
 
 r_unpivoted_df %>%
@@ -215,14 +215,14 @@ r_unpivoted_df %>%
   arrange(desc(n)) %>%
   head()
 #> # A tibble: 6 × 2
-#>   measure_id             n
-#>   <chr>              <int>
-#> 1 OP_10               3823
-#> 2 READM_30_HIP_KNEE    222
-#> 3 COMP_HIP_KNEE         23
-#> 4 MORT_30_PN            15
-#> 5 EDAC_30_PN            14
-#> 6 READM_30_HOSP_WIDE    14
+#>   measure_id       n
+#>   <chr>        <int>
+#> 1 OP_18B         478
+#> 2 IMM_3          133
+#> 3 HCP_COVID_19   131
+#> 4 OP_22          111
+#> 5 OP_13          110
+#> 6 OP_29          101
 ```
 
 ## What-if Analysis
@@ -239,13 +239,13 @@ input_df %>%
   inner_join(geis_names_df, by = "PROVIDER_ID") %>%
   select_at(c("hospital_name", mortality_df$measure_id))
 #>                             hospital_name MORT_30_AMI MORT_30_CABG MORT_30_COPD
-#> 1      GEISINGER-COMMUNITY MEDICAL CENTER       0.122        0.039        0.088
-#> 2                GEISINGER MEDICAL CENTER       0.110        0.028        0.082
-#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER       0.112        0.021        0.067
+#> 1      GEISINGER-COMMUNITY MEDICAL CENTER       0.125        0.035        0.088
+#> 2                GEISINGER MEDICAL CENTER       0.117        0.032        0.083
+#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER       0.109        0.022        0.087
 #>   MORT_30_HF MORT_30_PN MORT_30_STK PSI_04
-#> 1      0.125      0.147       0.128 162.11
-#> 2      0.118      0.146       0.142 172.67
-#> 3      0.087      0.118       0.135 168.82
+#> 1      0.136      0.146       0.112 162.13
+#> 2      0.101      0.130       0.113 174.50
+#> 3      0.094      0.122       0.134 140.58
 ```
 
 Create a new input table where those scores are improved by 5%.
@@ -262,13 +262,13 @@ new_input_df %>%
   inner_join(geis_names_df, by = "PROVIDER_ID") %>%
   select_at(c("hospital_name", mortality_df$measure_id))
 #>                             hospital_name MORT_30_AMI MORT_30_CABG MORT_30_COPD
-#> 1      GEISINGER-COMMUNITY MEDICAL CENTER      0.1159      0.03705      0.08360
-#> 2                GEISINGER MEDICAL CENTER      0.1045      0.02660      0.07790
-#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER      0.1064      0.01995      0.06365
+#> 1      GEISINGER-COMMUNITY MEDICAL CENTER     0.11875      0.03325      0.08360
+#> 2                GEISINGER MEDICAL CENTER     0.11115      0.03040      0.07885
+#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER     0.10355      0.02090      0.08265
 #>   MORT_30_HF MORT_30_PN MORT_30_STK   PSI_04
-#> 1    0.11875    0.13965     0.12160 154.0045
-#> 2    0.11210    0.13870     0.13490 164.0365
-#> 3    0.08265    0.11210     0.12825 160.3790
+#> 1    0.12920     0.1387     0.10640 154.0235
+#> 2    0.09595     0.1235     0.10735 165.7750
+#> 3    0.08930     0.1159     0.12730 133.5510
 ```
 
 Then recompute the star scores.
@@ -280,10 +280,10 @@ new_output_df %>%
   inner_join(geis_names_df, by = "PROVIDER_ID") %>%
   select(hospital_name, peer_group = n_groups, summary_score, stars)
 #>                             hospital_name peer_group summary_score stars
-#> 1      GEISINGER-COMMUNITY MEDICAL CENTER          5    0.03001759     4
-#> 2                GEISINGER MEDICAL CENTER          5    0.39356969     5
-#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER          5    0.52594285     5
+#> 1      GEISINGER-COMMUNITY MEDICAL CENTER          5     0.2187725     4
+#> 2                GEISINGER MEDICAL CENTER          5     0.4196913     5
+#> 3 GEISINGER WYOMING VALLEY MEDICAL CENTER          5     0.4658343     5
 ```
 
 So improving all 7 Mortality scores by 5% changed the overall star
-ratings from 3, 4 and 5 to 4, 5 and 5.
+ratings from 4, 4 and 4 to 4, 5 and 5.
