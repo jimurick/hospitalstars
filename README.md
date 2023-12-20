@@ -16,9 +16,9 @@ the data is spread out over dozens of archives of CSV files, and the
 algorithm is implemented with SAS.
 
 The hospitalstars package has an R implementation of the most recent
-(April 2021 & July 2022) versions of the SAS package, and prepared input
-data from each quarterly Care Compare report from January 2018 through
-April 2023.
+(April 2021, July 2022, July 2023) versions of the SAS package, and
+prepared input data from each quarterly Care Compare report from January
+2018 through October 2023.
 
 ## Installation
 
@@ -179,9 +179,9 @@ sas_package$v202307$output_df %>%
 
 It may be interesting to note that the results in the last two code
 chunks above are not the same, because the SAS Package’s input file has
-some differences with the Care Compare report from July 2021 (the data
-used for the 2022 Star Ratings). If you use the SAS Package’s input file
-in R here, you should get the same output as you would in SAS.
+some differences with the Care Compare report from January 2023 (the
+data used for the 2023 Star Ratings). If you use the SAS Package’s input
+file in R here, you should get the same output as you would in SAS.
 
 ``` r
 compute_star_scores(sas_package$v202307$input_df) %>%
